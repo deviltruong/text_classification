@@ -8,46 +8,55 @@ from io import open
 import unicodedata
 from tokenizer.tokenizer import Tokenizer
 
-r = regex.regex()
 tokenizer = Tokenizer()
+spliter = tokenizer.spliter
 
-def load_dataset_from_disk(dataset):
-    list_samples = {k: [] for k in my_map.name2label.keys()}
-    print(list_samples)
-    print 'load_data in ' + dataset
 
-    # return list file and folder in dir
+r = regex.regex()
+
+
+def load_dataset_from_disk(dataset, max_length):
+    total_words = set([])
+    samples = {k:[] for k in my_map.name2label.keys()}
     stack = os.listdir(dataset)
-
-    while len(stack) > 0 :
+    print 'loading data in ' + dataset
+    while (len(stack) > 0):
         file_name = stack.pop()
         file_path = os.path.join(dataset, file_name)
-        # where is file_path
         if (os.path.isdir(file_path)):
             utils.push_data_to_stack(stack, file_path, file_name)
-        else :
-            print('%s' % file_path)
+        else:
+            print('\r%s' % (file_path)),
             sys.stdout.flush()
             with open(file_path, 'r', encoding='utf-16') as fp:
-
                 content = unicodedata.normalize('NFKC', fp.read())
+                sentences = filter(lambda s: len(s) > 0, spliter.split(content))
+                sentences = map(lambda s: r.run(tokenizer.predict(s)), sentences)
+                content = u'\n'.join(sentences).lower()
+                words = content.split()
+                words = words[:max_length]
+                total_words.update(words)
 
-                #tokenizer content
-                content = r.run(tokenizer.predict(content))
-                #dir name of file_path
                 dir_name = utils.get_dir_name(file_path)
-                list_samples[dir_name].append(content)
+                samples[dir_name].append(u' '.join(words[:max_length]))
+
     print('')
-    return list_samples
-def load_dataset_from_list(list_samples):
+    print('there are %d words' % (len(total_words)))
+    return samples, len(total_words)
+
+
+def load_dataset_from_list(list_samples, max_length):
     result = []
     for sample in list_samples:
-        sample = r.run(tokenizer.predict(sample))
-        result.append(sample)
+        sentences = filter(lambda s: len(s) > 0, spliter.split(sample))
+        sentences = map(lambda s: r.run(tokenizer.predict(s)), sentences)
+        sample = u'\n'.join(sentences).lower()
+        words = sample.split()
+        result.append(words[:max_length])
     return result
 
 
 
 
 if __name__ == '__main__':
-    load_dataset_from_disk('dataset/train')
+    load_dataset_from_disk('dataset_small/train', 500)
