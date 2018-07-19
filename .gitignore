@@ -1,0 +1,11 @@
+# Composer files
+dataset/
+embedding/
+tokenizer/
+vnspliter/
+model/
+*.pyc
+.idea
+.idea/workspace.xml
+dataset_small
+.idea/
