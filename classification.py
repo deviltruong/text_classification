@@ -69,31 +69,45 @@ class classification:
                 y.append(label)
                 X.append(content)
         return X, y
+    def split_validation(self, samples_train):
+        samples_val = {}
+        for cat in samples_train:
+            samples = samples_train[cat]
+            boundary = int(round(0.9 * len(samples)))
+            samples_val.update({cat : samples[boundary : ]})
+            samples_train[cat] = samples[: boundary]
+        return samples_val
 
     def training(self, data_train, data_test):
         n_labels = len(my_map.label2name)
         X_train, y_train = self.load_training_vector()
         if X_train is None or y_train is None:
             samples_train = preprocessing.load_dataset_from_disk(data_train)
+            samples_val = self.split_validation(samples_train)
+
             X_train, y_train = self.prepare_data(samples_train)
+            X_val, y_val = self.prepare_data(samples_val)
 
             X_train = embedding.construct_tensor_word(X_train, self.max_length)
             y_train = utils.convert_list_to_onehot(y_train, n_labels)
-            self.save_training_vector(X_train, y_train)
-        self.fit(X_train, y_train)
 
-        X_test, y_test = self.load_testing_vector()
-        if X_test is None or y_test is None:
-            samples_test = preprocessing.load_dataset_from_disk(data_test)
-            X_test, y_test = self.prepare_data(samples_test)
-            X_test = embedding.construct_tensor_word(X_test, self.max_length)
-            y_test = utils.convert_list_to_onehot(y_test, n_labels)
-            self.save_testing_vector(X_test, y_test)
-        self.evaluation(X_test, y_test)
+            X_val = embedding.construct_tensor_word(X_val, self.max_length)
+            y_val = utils.convert_list_to_onehot(y_val, n_labels)
+            self.save_training_vector(X_train, y_train)
+        self.fit(X_train, y_train,  X_val, y_val)
+
+        # X_test, y_test = self.load_testing_vector()
+        # if X_test is None or y_test is None:
+        #     samples_test = preprocessing.load_dataset_from_disk(data_test)
+        #     X_test, y_test = self.prepare_data(samples_test)
+        #     X_test = embedding.construct_tensor_word(X_test, self.max_length)
+        #     y_test = utils.convert_list_to_onehot(y_test, n_labels)
+        #     self.save_testing_vector(X_test, y_test)
+        # self.evaluation(X_test, y_test)
         self.save_model()
 
 
-    def fit(self, X, y):
+    def fit(self, X, y, X_val, y_val):
         print('build model...')
         # build network
         num_lstm_layer = 2
@@ -107,7 +121,7 @@ class classification:
         print 'Training model...'
         early_stopping = EarlyStopping(patience=self.patience)
         self.model.fit(X, y, batch_size=128, epochs=100,
-                           validation_split=0.1,
+                           validation_data=(X_val, y_val),
                            callbacks=[early_stopping])
 
 
