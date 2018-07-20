@@ -9,3 +9,4 @@ model/
 .idea/workspace.xml
 dataset_small
 .idea/
+*.zip
