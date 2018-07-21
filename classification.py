@@ -96,14 +96,7 @@ class classification:
             self.save_training_vector(X_train, y_train)
         self.fit(X_train, y_train,  X_val, y_val)
 
-        # X_test, y_test = self.load_testing_vector()
-        # if X_test is None or y_test is None:
-        #     samples_test = preprocessing.load_dataset_from_disk(data_test)
-        #     X_test, y_test = self.prepare_data(samples_test)
-        #     X_test = embedding.construct_tensor_word(X_test, self.max_length)
-        #     y_test = utils.convert_list_to_onehot(y_test, n_labels)
-        #     self.save_testing_vector(X_test, y_test)
-        # self.evaluation(X_test, y_test)
+
         self.save_model()
 
 
@@ -140,6 +133,16 @@ class classification:
         self.load_model()
         if self.model == None:
             self.training(data_train, data_test)
+
+        n_labels = len(my_map.label2name)
+        X_test, y_test = self.load_testing_vector()
+        if X_test is None or y_test is None:
+            samples_test = preprocessing.load_dataset_from_disk(data_test)
+            X_test, y_test = self.prepare_data(samples_test)
+            X_test = embedding.construct_tensor_word(X_test, self.max_length)
+            y_test = utils.convert_list_to_onehot(y_test, n_labels)
+            self.save_testing_vector(X_test, y_test)
+        self.evaluation(X_test, y_test)
 
     def predict(self, list_document):
         # docs = preprocessing.load_dataset_from_list(list_document)
