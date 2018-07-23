@@ -39,6 +39,11 @@ def load_dataset_from_disk(dataset):
                 list_samples[dir_name].append(content)
     print('')
     return list_samples
+
+def token(doc):
+    doc = unicodedata.normalize('NFKC', doc)
+    new_doc = r.run(tokenizer.predict(doc))
+    return new_doc
 def load_dataset_from_list(list_samples):
     result = []
     for sample in list_samples:

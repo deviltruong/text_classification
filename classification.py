@@ -8,6 +8,7 @@ from sklearn.externals import joblib
 from io import open
 import embedding
 import network
+import logging
 from keras.models import load_model
 from keras.callbacks import EarlyStopping
 from sklearn.metrics import accuracy_score, confusion_matrix
@@ -119,6 +120,11 @@ class classification:
 
 
     def evaluation(self, X, y):
+
+        print(X)
+        y_pre = self.model.predict(X, batch_size=128)
+        print(y_pre)
+        exit()
         y_pred = self.model.predict_classes(X, batch_size=128)
         y = utils.convert_onehot_to_list(y)
 
@@ -127,6 +133,10 @@ class classification:
         print('Accuracy = %.5f' % (accuracy))
         confusion = confusion_matrix(y, y_pred)
         print(confusion)
+        logging.basicConfig(filename='log/eval.log', level=logging.DEBUG)
+
+        logging.info('Accuracy = %.5f' % (accuracy))
+        logging.info(confusion)
 
 
     def run(self, data_train, data_test):
@@ -144,10 +154,16 @@ class classification:
             self.save_testing_vector(X_test, y_test)
         self.evaluation(X_test, y_test)
 
-    def predict(self, list_document):
-        # docs = preprocessing.load_dataset_from_list(list_document)
-        # X = self.feature_extraction(docs)
-        # return self.model.predict(X)
+    def predict(self, doc):
+        self.load_model()
+
+        doc = preprocessing.token(doc)
+        print(doc)
+        doc_vec = embedding.embedding_doc(doc,self.max_length)
+        print(doc_vec)
+
+        result = self.model.predict(doc_vec)
+        print(result)
         pass
 
 
@@ -162,4 +178,9 @@ class classification:
 
 if __name__ == '__main__':
     c = classification()
+    f = open("test_predict.txt",'r')
+    doc = f.read()
+    f.close()
+    c.predict(doc)
+    exit()
     c.run('dataset_small/train', 'dataset_small/test')
