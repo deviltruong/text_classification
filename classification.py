@@ -121,10 +121,9 @@ class classification:
 
     def evaluation(self, X, y):
 
-        print(X)
+
         y_pre = self.model.predict(X, batch_size=128)
-        print(y_pre)
-        exit()
+
         y_pred = self.model.predict_classes(X, batch_size=128)
         y = utils.convert_onehot_to_list(y)
 
@@ -158,11 +157,12 @@ class classification:
         self.load_model()
 
         doc = preprocessing.token(doc)
-        print(doc)
-        doc_vec = embedding.embedding_doc(doc,self.max_length)
-        print(doc_vec)
 
-        result = self.model.predict(doc_vec)
+        doc_vec = embedding.embedding_doc(doc,self.max_length)
+
+        print(self.model.predict(doc_vec))
+        label = self.model.predict_classes(doc_vec)
+        result = my_map.label2name[int(label)]
         print(result)
         pass
 
@@ -178,9 +178,9 @@ class classification:
 
 if __name__ == '__main__':
     c = classification()
-    f = open("test_predict.txt",'r')
-    doc = f.read()
-    f.close()
-    c.predict(doc)
-    exit()
+    # f = open("test_predict.txt",'r')
+    # doc = f.read()
+    # f.close()
+    # c.predict(doc)
+    # exit()
     c.run('dataset_small/train', 'dataset_small/test')

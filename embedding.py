@@ -54,6 +54,7 @@ def construct_tensor_word(docs, max_length):
 def embedding_doc(doc, max_length):
     words = doc.split(" ")
     X = np.empty([1, max_length, embedd_dim])
+    length = len(words)
     for i in range(len(words)):
         if i >= max_length:
             break
@@ -63,7 +64,7 @@ def embedding_doc(doc, max_length):
         except:
             embedd = unknown_embedd
         X[0,i] = embedd
-
+    X[0, length:] = np.zeros([1, embedd_dim])
     return X
 # result = construct_tensor_word("anh truong dep trai"*100, 3)
 #
